@@ -1,0 +1,149 @@
+PL/SQL Cursors
+In PL/SQL, cursors are used to fetch and manipulate data returned by SQL queries. Cursors can be implicit or explicit, and they allow row-by-row processing of query results. Here's a demonstration of different types of cursors in PL/SQL:
+
+1. Implicit Cursor
+PL/SQL automatically creates an implicit cursor for SELECT INTO, INSERT, UPDATE, and DELETE operations. These cursors are automatically opened, fetched, and closed by PL/SQL.
+
+2. Explicit Cursor
+An explicit cursor must be declared, opened, fetched, and closed explicitly in PL/SQL.
+
+3. Cursor FOR Loop
+A FOR loop can automatically open, fetch, and close an explicit cursor.
+
+4. Parameterized Cursor
+A parameterized cursor accepts parameters and can be used to filter data based on input.
+
+Example: PL/SQL Block Using All Types of Cursors
+In this example, we'll create a PL/SQL block that demonstrates the use of:
+
+Implicit cursor
+Explicit cursor
+Cursor FOR loop
+Parameterized cursor
+Assume we have a table called employees with the following columns:
+
+employee_id
+first_name
+last_name
+department
+salary
+
+
+
+PL/SQL Block
+
+
+
+
+
+DECLARE
+   -- Variables for implicit cursor (SELECT INTO)
+   v_employee_name  VARCHAR2(50);
+   v_employee_salary NUMBER;
+   
+   -- Explicit cursor declaration
+   CURSOR emp_cursor IS
+      SELECT first_name, salary FROM employees WHERE department = 'HR';
+   
+   -- Parameterized cursor declaration
+   CURSOR emp_dept_cursor (p_department VARCHAR2) IS
+      SELECT first_name, salary FROM employees WHERE department = p_department;
+
+BEGIN
+   -- Using Implicit Cursor (SELECT INTO)
+   -- Retrieve employee details based on employee_id
+   SELECT first_name, salary
+   INTO v_employee_name, v_employee_salary
+   FROM employees
+   WHERE employee_id = 101;
+   
+   -- Display the result of implicit cursor
+   DBMS_OUTPUT.PUT_LINE('Employee (Implicit Cursor): ' || v_employee_name || ' with salary: ' || v_employee_salary);
+
+   -- Explicit Cursor (Fetching rows one by one)
+   OPEN emp_cursor;  -- Open the explicit cursor
+   LOOP
+      FETCH emp_cursor INTO v_employee_name, v_employee_salary;  -- Fetch each row into variables
+      EXIT WHEN emp_cursor%NOTFOUND;  -- Exit when no more rows
+      DBMS_OUTPUT.PUT_LINE('HR Employee: ' || v_employee_name || ' with salary: ' || v_employee_salary);
+   END LOOP;
+   CLOSE emp_cursor;  -- Close the cursor
+
+   -- Using Cursor FOR Loop (Automatically manages open/fetch/close)
+   DBMS_OUTPUT.PUT_LINE('Employees in IT Department (Cursor FOR Loop):');
+   FOR emp_rec IN emp_cursor LOOP
+      DBMS_OUTPUT.PUT_LINE('Employee: ' || emp_rec.first_name || ' with salary: ' || emp_rec.salary);
+   END LOOP;
+
+   -- Using Parameterized Cursor
+   DBMS_OUTPUT.PUT_LINE('Employees in Finance Department (Parameterized Cursor):');
+   OPEN emp_dept_cursor('Finance');
+   LOOP
+      FETCH emp_dept_cursor INTO v_employee_name, v_employee_salary;
+      EXIT WHEN emp_dept_cursor%NOTFOUND;
+      DBMS_OUTPUT.PUT_LINE('Employee: ' || v_employee_name || ' with salary: ' || v_employee_salary);
+   END LOOP;
+   CLOSE emp_dept_cursor;
+
+EXCEPTION
+   -- Handling NO_DATA_FOUND if no employee is found in the implicit cursor
+   WHEN NO_DATA_FOUND THEN
+      DBMS_OUTPUT.PUT_LINE('No employee found with the specified criteria.');
+   -- Handling other unexpected exceptions
+   WHEN OTHERS THEN
+      DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+
+END;
+/
+
+
+
+
+
+
+Explanation of the PL/SQL Block:
+
+1. Implicit Cursor:
+
+In the SELECT INTO statement, the implicit cursor is automatically managed by PL/SQL.
+If no row is found, it raises a NO_DATA_FOUND exception.
+2. Explicit Cursor:
+
+The emp_cursor is explicitly declared to fetch data from the employees table where the department is HR.
+The cursor is opened, fetched row-by-row, and closed manually using OPEN, FETCH, EXIT, and CLOSE statements.
+
+3. Cursor FOR Loop:
+
+The FOR loop automates cursor management. It opens the cursor, fetches each row, and closes it after all rows are processed.
+This is used to process employees in the HR department.
+4. Parameterized Cursor:
+
+The emp_dept_cursor accepts a parameter (p_department), allowing you to fetch data for any department dynamically.
+In this case, it is used to fetch employees in the Finance department by passing 'Finance' as an argument.
+
+Output Example:
+
+Assuming the following data is present in the employees table:
+
+employee_id	first_name	last_name	department	salary
+101	John	Doe	IT	50000
+102	Jane	Smith	HR	60000
+103	Alice	Brown	Finance	55000
+104	Bob	Johnson	IT	62000
+
+The output might look like this:
+
+sql
+Copy code
+Employee (Implicit Cursor): John with salary: 50000
+HR Employee: Jane with salary: 60000
+Employees in IT Department (Cursor FOR Loop):
+HR Employee: Jane with salary: 60000
+Employees in Finance Department (Parameterized Cursor):
+Employee: Alice with salary: 55000
+Key Points:
+Implicit Cursors: Used automatically by PL/SQL for single-row queries like SELECT INTO.
+Explicit Cursors: Manually managed by opening, fetching, and closing for multi-row queries.
+Cursor FOR Loop: Automatically opens, fetches, and closes the cursor within the loop, making it easier to process multiple rows.
+Parameterized Cursors: Allow passing of parameters to filter query results dynamically.
+These cursor types allow row-by-row processing of SQL query results in PL/SQL, providing flexibility and control over data processing.

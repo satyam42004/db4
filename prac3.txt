@@ -1,0 +1,131 @@
+Here are examples of MongoDB queries using CRUD (Create, Read, Update, Delete) operations, including the save() method and logical operators:
+
+1. CREATE Operation
+
+1.1 insertOne()
+
+Inserts a single document into a collection.
+
+db.employees.insertOne({
+    "employeeID": 101,
+    "firstName": "John",
+    "lastName": "Doe",
+    "department": "HR",
+    "salary": 50000
+});
+
+1.2 insertMany()
+Inserts multiple documents into a collection.
+
+db.employees.insertMany([
+    { "employeeID": 102, "firstName": "Jane", "lastName": "Smith", "department": "IT", "salary": 60000 },
+    { "employeeID": 103, "firstName": "Mike", "lastName": "Johnson", "department": "Finance", "salary": 55000 }
+]);
+
+2. READ Operation
+
+2.1 find()
+
+Retrieves documents from a collection.
+
+Basic Query: Retrieve all documents.
+
+db.employees.find();
+
+Query with a Condition: Retrieve employees from the "HR" department.
+
+db.employees.find({ "department": "HR" });
+
+2.2 find() with Logical Operators
+
+AND Operator: Employees in the "IT" department with a salary greater than 50000.
+db.employees.find({ "department": "IT", "salary": { $gt: 50000 } });
+
+OR Operator: Employees either in "HR" or "Finance" departments.
+db.employees.find({
+    $or: [{ "department": "HR" }, { "department": "Finance" }]
+});
+
+
+AND/OR Combination: Employees in "IT" department with salary greater than 50000 or in "HR".
+db.employees.find({
+    $or: [{ "department": "IT", "salary": { $gt: 50000 } }, { "department": "HR" }]
+});
+
+3. UPDATE Operation
+
+3.1 updateOne()
+Updates a single document in a collection.
+
+db.employees.updateOne(
+    { "employeeID": 101 },  // Find employee with ID 101
+    { $set: { "salary": 55000 } }  // Set new salary
+);
+
+3.2 updateMany()
+Updates multiple documents that match the condition.
+
+db.employees.updateMany(
+    { "department": "HR" },  // Find all employees in HR
+    { $set: { "salary": 52000 } }  // Set new salary for all
+);
+
+3.3 save()
+
+Inserts a new document if it doesn’t exist, or updates an existing document if it exists (upserts).
+
+js
+Copy code
+db.employees.save({
+    "employeeID": 104,
+    "firstName": "Alice",
+    "lastName": "Green",
+    "department": "IT",
+    "salary": 62000
+});
+
+If an employee with employeeID 104 exists, it will be updated. If not, a new document will be inserted.
+
+4. DELETE Operation
+
+4.1 deleteOne()
+
+Deletes a single document from the collection.
+
+db.employees.deleteOne({ "employeeID": 101 });
+
+4.2 deleteMany()
+
+Deletes all documents that match the condition.
+
+db.employees.deleteMany({ "department": "Finance" });
+
+5. Additional MongoDB Queries
+
+5.1 find() with Projection
+Retrieve only specific fields from a document (e.g., excluding salary).
+
+db.employees.find(
+    { "department": "IT" },  // Query condition
+    { "firstName": 1, "lastName": 1, "department": 1, "_id": 0 }  // Projection, exclude _id
+);
+
+5.2 countDocuments()
+Count the number of documents that match the query.
+
+db.employees.countDocuments({ "department": "HR" });
+
+5.3 sort()
+Sort the query results based on a field.
+
+
+db.employees.find().sort({ "salary": -1 });  // Sort by salary in descending order
+
+6. Aggregation Example
+
+6.1 Aggregation with $group and $sum
+Calculate the total salary by department.
+
+db.employees.aggregate([
+    { $group: { "_id": "$department", "totalSalary": { $sum: "$salary" } } }
+]);

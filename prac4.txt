@@ -1,0 +1,92 @@
+Here's an example of an Anonymous PL/SQL block in Oracle that demonstrates the use of control structures (like IF-THEN, LOOP, etc.) and exception handling. PL/SQL (Procedural Language/SQL) allows you to create procedural logic and handle exceptions (errors) effectively.
+
+Example of PL/SQL Block
+This block inserts data into a table, uses a loop to process multiple records, and handles exceptions if any error occurs.
+
+
+
+
+
+
+DECLARE
+   v_employee_id   NUMBER;               -- Variable to store employee ID
+   v_employee_name VARCHAR2(50);         -- Variable to store employee name
+   v_salary        NUMBER := 0;          -- Variable to store salary with an initial value
+   v_department    VARCHAR2(30);         -- Variable to store department
+   v_bonus         NUMBER;               -- Variable to store calculated bonus
+   
+   -- Custom exception for handling specific errors
+   insufficient_salary EXCEPTION;
+   
+BEGIN
+   -- Retrieving specific data from the Employees table using a SELECT statement
+   SELECT employee_id, first_name, salary, department
+   INTO v_employee_id, v_employee_name, v_salary, v_department
+   FROM employees
+   WHERE employee_id = 101;
+
+   -- Control structure: IF-THEN-ELSE to check the employee's department and calculate bonus
+   IF v_department = 'HR' THEN
+      v_bonus := v_salary * 0.1; -- HR employees get a 10% bonus
+   ELSIF v_department = 'IT' THEN
+      v_bonus := v_salary * 0.2; -- IT employees get a 20% bonus
+   ELSE
+      v_bonus := v_salary * 0.05; -- Other departments get a 5% bonus
+   END IF;
+
+   -- Raise an exception if the salary is below a certain threshold
+   IF v_salary < 3000 THEN
+      RAISE insufficient_salary;
+   END IF;
+
+   -- Loop example: Looping through a range of employee IDs and updating their bonuses
+   FOR i IN 101..110 LOOP
+      UPDATE employees
+      SET salary = salary + (salary * 0.1)
+      WHERE employee_id = i;
+      
+      DBMS_OUTPUT.PUT_LINE('Updated salary for employee ID: ' || i);
+   END LOOP;
+
+   -- Handling the bonus calculation
+   DBMS_OUTPUT.PUT_LINE('Employee ' || v_employee_name || ' from ' || v_department || ' department will get a bonus of ' || v_bonus);
+   
+EXCEPTION
+   -- Handling specific exception for low salary
+   WHEN insufficient_salary THEN
+      DBMS_OUTPUT.PUT_LINE('Salary is too low for employee ' || v_employee_name || '. Cannot process bonus.');
+      
+   -- Handling NO_DATA_FOUND exception in case no employee is found
+   WHEN NO_DATA_FOUND THEN
+      DBMS_OUTPUT.PUT_LINE('No employee found with the given ID.');
+      
+   -- Handling other general exceptions
+   WHEN OTHERS THEN
+      DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLERRM);
+   
+END;
+/
+
+
+
+
+Explanation of the PL/SQL Block:
+Declarations Section:
+
+Variables (v_employee_id, v_employee_name, etc.) are declared for use in the block.
+A custom exception insufficient_salary is declared to handle specific cases.
+BEGIN Block (Execution Section):
+
+A SELECT statement retrieves employee information from the employees table.
+The IF-THEN-ELSE control structure is used to calculate a bonus based on the employee's department.
+A FOR LOOP is used to loop through a range of employee IDs (from 101 to 110) and update their salaries.
+The RAISE statement is used to manually trigger an exception when a condition is met (e.g., salary is too low).
+EXCEPTION Section (Exception Handling):
+
+WHEN insufficient_salary THEN: Handles the case when the employee's salary is below a defined threshold.
+WHEN NO_DATA_FOUND THEN: Handles the scenario when no data is found in the SELECT query.
+WHEN OTHERS THEN: Handles any other unexpected errors, using the SQLERRM function to print the error message.
+Notes:
+The DBMS_OUTPUT.PUT_LINE is used to display messages in the output window (you need to enable the output in your SQL client).
+This block demonstrates how to control the flow of logic using control structures (IF, LOOP) and handle different types of errors using exceptions (NO_DATA_FOUND, custom exceptions, etc.).
+By using control structures and exception handling, you can ensure your PL/SQL block can handle both expected and unexpected scenarios during execution.
